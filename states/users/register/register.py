@@ -24,3 +24,6 @@ async def user_register_input_message_handler(message: types.Message, state: FSM
         await message.delete()
         await data['message_id'].edit_text(msg_text)
         await UserRegister.user_input_age.set()
+
+            # Ошибка
+

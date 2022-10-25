@@ -2,6 +2,9 @@ from config import admins
 from database.db import Database
 from aiogram import types
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.utils.callback_data import CallbackData
+
+edit_msg_admin = CallbackData("edit_msg", "msg_type")
 
 db = Database('database/db.db')
 
@@ -20,7 +23,15 @@ async def generate_keyboard_message(user_id: int, msg_type: str) -> types.Inline
         # Добавить Callbackdata с айдишником сообщения и кнопкой сменить сообщение(для администраторов)
         keyboard.add(InlineKeyboardButton(text="Зарегестрироваться", callback_data="register"))
     elif msg_type == "cmd_register_step_1":
-        pass
+        keyboard.add(InlineKeyboardButton(text="Отменить регистрацию", callback_data="stop_register"))
+    elif msg_type == "cmd_register_step_2":
+        keyboard.add(InlineKeyboardButton(text="Назад", callback_data="cancel"))
+    elif msg_type == "err_1":
+        keyboard.add(InlineKeyboardButton(text="Назад", callback_data="cancel"))
+    if user_id in admins:
+        keyboard.add(InlineKeyboardButton(text="Изменить текст сообщения(for admin)", callback_data=edit_msg_admin.new(
+            f"{msg_type}"
+        )))
     return keyboard
 
 
@@ -64,7 +75,7 @@ async def generate_profile_register(user_id: int, user_info: dict, msg_type: str
     
 Фамилия: {user_info['full_name'][0]}
 Имя: {user_info['full_name'][1]}
-Возраст: {user_info['full_name'][2]}
+Отчество: {user_info['full_name'][2]}
 Возраст: {user_info['age']}
 """
 
