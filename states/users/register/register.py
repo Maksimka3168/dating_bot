@@ -17,12 +17,12 @@ async def user_register_input_message_handler(message: types.Message, state: FSM
     async with state.proxy() as data:
         if len(message.text.split(" ")) == 3:
             data['dict_user_data']["full_name"] = message.text.split(" ")
-            msg_text = await generate_profile_register(message.from_user.id, data['dict_user_data'],
+            msg_text, keyboard = await generate_profile_register(message.from_user.id, data['dict_user_data'],
                                                        "cmd_register_step_2")
         else:
-            msg_text = await message_correct(message.from_user.id, "err_1")
+            msg_text, keyboard = await message_correct(message.from_user.id, "err_1")
         await message.delete()
-        await data['message_id'].edit_text(msg_text)
+        await data['message_id'].edit_text(text=msg_text, reply_markup=keyboard)
         await UserRegister.user_input_age.set()
 
             # Ошибка

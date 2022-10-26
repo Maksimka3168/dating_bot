@@ -1,3 +1,5 @@
+from typing import Union
+
 from config import admins
 from database.db import Database
 from aiogram import types
@@ -20,7 +22,6 @@ msg_ids_dict = {
 async def generate_keyboard_message(user_id: int, msg_type: str) -> types.InlineKeyboardMarkup:
     keyboard = InlineKeyboardMarkup()
     if msg_type == "cmd_start_not_reg":
-        # Добавить Callbackdata с айдишником сообщения и кнопкой сменить сообщение(для администраторов)
         keyboard.add(InlineKeyboardButton(text="Зарегестрироваться", callback_data="register"))
     elif msg_type == "cmd_register_step_1":
         keyboard.add(InlineKeyboardButton(text="Отменить регистрацию", callback_data="stop_register"))
@@ -48,7 +49,7 @@ async def get_message(msg_type: str) -> str:
     return message_text
 
 
-async def message_correct(user_id: int, msg_type: str) -> str:
+async def message_correct(user_id: int, msg_type: str):
     """
     Данная функция обрабаывает сообщения для обычного пользователя и для администратора, добавляя айди сообщения.
     :param user_id: user_id пользователя
@@ -56,20 +57,23 @@ async def message_correct(user_id: int, msg_type: str) -> str:
     :return: string, обработанный текст
     """
     msg_text = await get_message(msg_type)
+    keyboard = await generate_keyboard_message(user_id, msg_type)
     if user_id in admins:
-        return msg_text + f"\n\n<i>msg_id: {msg_ids_dict[msg_type]}</i>\n<i><s>Видно только администраторам</s></i>"
+        return msg_text + f"\n\n<i>msg_id: {msg_ids_dict[msg_type]}</i>\n<i><s>Видно только администраторам</s></i>", keyboard
     else:
-        return msg_text
+        return msg_text, keyboard
 
 
-async def generate_profile_register(user_id: int, user_info: dict, msg_type: str) -> str:
+async def generate_profile_register(user_id: int, user_info: dict, msg_type: str):
     """
     Данная функция генерирует профиль пользователя при регситрации
+    :param msg_type: тип сообщения
     :param user_id:  user_id пользователя
     :param user_info: информация о пользователе (словарь)
     :return: string, профиль пользователя
     """
     msg_text = await get_message(msg_type)
+    keyboard = await generate_keyboard_message(user_id, msg_type)
     message_text = f"""
 АНКЕТА ПОЛЬЗОВАТЕЛЯ
     
@@ -81,6 +85,6 @@ async def generate_profile_register(user_id: int, user_info: dict, msg_type: str
 
     message_text += f"\n\n{msg_text}"
     if user_id in admins:
-        return message_text + f"\n\n<i>msg_id: {msg_ids_dict[msg_type]}</i>\n<i><s>Видно только администраторам</s></i>"
+        return message_text + f"\n\n<i>msg_id: {msg_ids_dict[msg_type]}</i>\n<i><s>Видно только администраторам</s></i>", keyboard
     else:
-        return message_text
+        return message_text, keyboard
