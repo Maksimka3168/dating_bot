@@ -73,18 +73,23 @@ async def generate_profile_register(user_id: int, user_info: dict, msg_type: str
     :return: string, профиль пользователя
     """
     msg_text = await get_message(msg_type)
-    keyboard = await generate_keyboard_message(user_id, msg_type)
-    message_text = f"""
-АНКЕТА ПОЛЬЗОВАТЕЛЯ
-    
-Фамилия: {user_info['full_name'][0]}
-Имя: {user_info['full_name'][1]}
-Отчество: {user_info['full_name'][2]}
-Возраст: {user_info['age']}
-"""
-
-    message_text += f"\n\n{msg_text}"
+    keyboard_1 = await generate_keyboard_message(user_id, msg_type)
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="Введённые данные:", callback_data="...")],
+            [InlineKeyboardButton(text="Фамилия:", callback_data="..."),
+             InlineKeyboardButton(text=f"{user_info['full_name'][0]}", callback_data="...")],
+            [InlineKeyboardButton(text="Имя:", callback_data="..."),
+             InlineKeyboardButton(text=f"{user_info['full_name'][1]}", callback_data="...")],
+            [InlineKeyboardButton(text="Отчество:", callback_data="..."),
+             InlineKeyboardButton(text=f"{user_info['full_name'][2]}", callback_data="...")],
+            [InlineKeyboardButton(text="Возраст:", callback_data="..."),
+             InlineKeyboardButton(text=f"{user_info['age']}", callback_data="...")],
+        ]
+    )
+    for key in keyboard_1.inline_keyboard:
+        keyboard.add(InlineKeyboardButton(text=key[0]['text'], callback_data=key[0]['callback_data']))
     if user_id in admins:
-        return message_text + f"\n\n<i>msg_id: {msg_ids_dict[msg_type]}</i>\n<i><s>Видно только администраторам</s></i>", keyboard
+        return msg_text + f"\n\n<i>msg_id: {msg_ids_dict[msg_type]}</i>\n<i><s>Видно только администраторам</s></i>", keyboard
     else:
-        return message_text, keyboard
+        return msg_text, keyboard
