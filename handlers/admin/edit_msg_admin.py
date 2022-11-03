@@ -9,7 +9,6 @@ from aiogram import types
 
 @dp.callback_query_handler(edit_msg_admin.filter(), state='*')
 async def edit_msg_admin_handler(call: types.CallbackQuery, callback_data: dict, state: FSMContext):
-    print("Сработало")
     await call.answer()
     async with state.proxy() as data:
         data['state_previous'] = await state.get_state()

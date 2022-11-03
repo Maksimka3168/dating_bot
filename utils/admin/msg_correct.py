@@ -74,19 +74,27 @@ async def generate_profile_register(user_id: int, user_info: dict, msg_type: str
     """
     msg_text = await get_message(msg_type)
     keyboard_1 = await generate_keyboard_message(user_id, msg_type)
-    keyboard = InlineKeyboardMarkup(
-        inline_keyboard=[
-            [InlineKeyboardButton(text="Введённые данные:", callback_data="...")],
-            [InlineKeyboardButton(text="Фамилия:", callback_data="..."),
-             InlineKeyboardButton(text=f"{user_info['full_name'][0]}", callback_data="...")],
-            [InlineKeyboardButton(text="Имя:", callback_data="..."),
-             InlineKeyboardButton(text=f"{user_info['full_name'][1]}", callback_data="...")],
-            [InlineKeyboardButton(text="Отчество:", callback_data="..."),
-             InlineKeyboardButton(text=f"{user_info['full_name'][2]}", callback_data="...")],
-            [InlineKeyboardButton(text="Возраст:", callback_data="..."),
-             InlineKeyboardButton(text=f"{user_info['age']}", callback_data="...")],
-        ]
-    )
+    keyboard = InlineKeyboardMarkup()
+    keyboard.add(InlineKeyboardButton(text="Введённые данные:", callback_data="..."))
+    for key in user_info:
+        if key == "full_name":
+            if user_info[key][0] is not None and user_info[key] is not None and user_info[key] is not None:
+                keyboard.row()
+                keyboard.insert(InlineKeyboardButton(text="Фамилия: ", callback_data="..."))
+                keyboard.insert(InlineKeyboardButton(text=user_info[key][0], callback_data="..."))
+                keyboard.row()
+                keyboard.insert(InlineKeyboardButton(text="Имя: ", callback_data="..."))
+                keyboard.insert(InlineKeyboardButton(text=user_info[key][1], callback_data="..."))
+                keyboard.row()
+                keyboard.insert(InlineKeyboardButton(text="Отчество: ", callback_data="..."))
+                keyboard.insert(InlineKeyboardButton(text=user_info[key][2], callback_data="..."))
+                keyboard.row()
+            elif key == "age":
+                if user_info[key] is not None:
+                    keyboard.insert(InlineKeyboardButton(text="Возраст", callback_data="..."))
+                    keyboard.insert(InlineKeyboardButton(text=user_info[key], callback_data="..."))
+    if len(keyboard.inline_keyboard) == 1:
+        keyboard.add(InlineKeyboardButton(text="Пусто", callback_data="..."))
     for key in keyboard_1.inline_keyboard:
         keyboard.add(InlineKeyboardButton(text=key[0]['text'], callback_data=key[0]['callback_data']))
     if user_id in admins:

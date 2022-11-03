@@ -11,8 +11,8 @@ async def message_commands_reg(message: types.Message, state: FSMContext):
     # Проверка зарегестрирован ли пользователь
     async with state.proxy() as data:
         data['dict_user_data'] = {
-            "full_name": ["-", "-", "-"],
-            "age": "-",
+            "full_name": [None, None, None],
+            "age": None,
         }
         await message.delete()
         msg_text, keyboard = await generate_profile_register(message.from_user.id, data['dict_user_data'],
