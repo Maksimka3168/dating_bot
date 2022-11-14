@@ -13,8 +13,7 @@ async def admin_edit_input_call_handler(call: types.CallbackQuery, state: FSMCon
         if call.data == "cancel":
             if data['msg_type'].startswith("cmd_register"):
                 try:
-                    msg_text, keyboard = await generate_profile_register(call.message.chat.id, data['dict_user_data'],
-                                                                         data['msg_type'])
+                    msg_text, keyboard = await generate_profile_register(call.message.chat.id, data['msg_type'])
                     await call.message.edit_text(text=msg_text, reply_markup=keyboard, parse_mode="HTML")
                     await state.set_state(data['state_previous'])
                 except Exception as error:
