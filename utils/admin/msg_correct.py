@@ -1,59 +1,60 @@
-from typing import Union
-
 from config import admins
 from database.db import Database
-from aiogram import types
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup
 from aiogram.utils.callback_data import CallbackData
+from aiogram.utils.markdown import escape_md
 
-from utils.users.register.get_address import get_address
+from utils.admin.generate_calendar import generate_calendar_inline
 
 edit_msg_admin = CallbackData("edit_msg", "msg_type")
 
 db = Database('database/db.db')
 
 msg_ids_dict = {
+    # Основные текстовые команды
     "cmd_start_not_reg": "r_1",  # Если пользователь не зарегестрирован
     "cmd_start_reg": "r_2",  # Если пользователь зарегестрирован
-    "cmd_register_step_1": "r_3",  # Первый шаг регистрации(выбор пола)
-    "cmd_register_step_2": "r_4",  # Второй шаг регистрации(подтверждение года)
-    "cmd_register_step_3": "r_5",  # Третий шаг регистрации(получение геолокации)
-    "cmd_register_step_4": "r_6",  # Четвёртый шаг регистрации(подтверждение геолокации)
-    "cmd_register_step_5": "r_7",  # Пятый шаг регистрации(ввод возраста)
-    "cmd_register_step_6": "r_8",  # Шестой шаг регистрации(ввод имени)
+    # Основная регистрация
+    "1": "r_3",  # Пятый шаг регистрации(ввод возраста)
+    "2": "r_4",  # Первый шаг регистрации(выбор пола)
+    "3": "r_5",  # Шестой шаг регистрации(ввод имени)
+    "4": "r_6",  # Второй шаг регистрации(подтверждение правил)
+    # Дополнительные данные
+    "5": "r_7",  # Первый шаг ввода доп. данных(рост)
+    "6": "r_8",  # Первый шаг ввода доп. данных(вес)
+    "7": "r_9",  # Первый шаг ввода доп. данных(цвет волос)
+    "8": "r_10",  # Первый шаг ввода доп. данных(типаж)
+    # Ошибки
     "err_1": "e_1",  # Ошибка №1
 }
 
-
-async def generate_keyboard_message(user_id: int, msg_type: str) -> ReplyKeyboardMarkup | InlineKeyboardMarkup:
+async def generate_keyboard_message(user_id: int, msg_type: str, *qwargs) -> ReplyKeyboardMarkup | InlineKeyboardMarkup:
     keyboard_inline = InlineKeyboardMarkup()
     keyboard_text = ReplyKeyboardMarkup()
     if msg_type == "cmd_start_not_reg":
         keyboard_inline.add(InlineKeyboardButton(text="Зарегестрироваться", callback_data="register"))
-    elif msg_type == "cmd_register_step_1":
+    elif msg_type == "1":
+        keyboard_inline = generate_calendar_inline(qwargs[0], qwargs[1], qwargs[2])
+    elif msg_type == "2":
         keyboard_inline.insert(InlineKeyboardButton(text="М", callback_data="male"))
         keyboard_inline.insert(InlineKeyboardButton(text="Ж", callback_data="female"))
-        keyboard_inline.add(InlineKeyboardButton(text="Отменить регистрацию", callback_data="stop_register"))
-    elif msg_type == "cmd_register_step_2":
-        keyboard_inline.insert(InlineKeyboardButton(text="Да, подтверждаю", callback_data="accept"))
-        keyboard_inline.insert(InlineKeyboardButton(text="сомневаюсь", callback_data="doubt"))
+    elif msg_type == "3":
+        keyboard_inline.add(InlineKeyboardButton(text="Назад", callback_data="cancel"))
+    elif msg_type == "4":
+        keyboard_inline.add(InlineKeyboardButton(text="Согласен", callback_data="accept"))
         keyboard_inline.add(InlineKeyboardButton(text="Правила", callback_data="rule"))
         keyboard_inline.add(InlineKeyboardButton(text="Назад", callback_data="cancel"))
-    elif msg_type == "cmd_register_step_3":
-        keyboard_text.add(KeyboardButton(text="Поделиться геолокацией", request_location=True))
-        keyboard_text.add(KeyboardButton(text="Назад"))
-        return keyboard_text
-    elif msg_type == "cmd_register_step_4":
-        keyboard_inline.insert(InlineKeyboardButton(text="Всё верно!", callback_data="accept"))
-        keyboard_inline.insert(InlineKeyboardButton(text="Переопределить", callback_data="update"))
+    elif msg_type == "5":
         keyboard_inline.add(InlineKeyboardButton(text="Назад", callback_data="cancel"))
-    elif msg_type == "cmd_register_step_5":
+    elif msg_type == "6":
         keyboard_inline.add(InlineKeyboardButton(text="Назад", callback_data="cancel"))
-    elif msg_type == "cmd_register_step_6":
+    elif msg_type == "7":
         keyboard_inline.add(InlineKeyboardButton(text="Назад", callback_data="cancel"))
-    elif msg_type == "cmd_register_step_7":
+    elif msg_type == "8":
         keyboard_inline.add(InlineKeyboardButton(text="Назад", callback_data="cancel"))
-    elif msg_type == "cmd_register_step_8":
+    elif msg_type == "9":
+        keyboard_inline.add(InlineKeyboardButton(text="Назад", callback_data="cancel"))
+    elif msg_type == "10":
         keyboard_inline.add(InlineKeyboardButton(text="Назад", callback_data="cancel"))
     elif msg_type == "err_1":
         keyboard_inline.add(InlineKeyboardButton(text="Назад", callback_data="cancel"))
@@ -87,7 +88,7 @@ async def message_correct(user_id: int, msg_type: str):
     msg_text = await get_message(msg_type)
     keyboard = await generate_keyboard_message(user_id, msg_type)
     if user_id in admins:
-        return msg_text + f"\n\n<i>msg_id: {msg_ids_dict[msg_type]}</i>", keyboard
+        return msg_text + f"\n\n{escape_md(f'msg_id: {msg_ids_dict[msg_type]}')}", keyboard
     else:
         return msg_text, keyboard
 
@@ -101,11 +102,8 @@ async def generate_profile_register(user_id: int, msg_type: str, *qwarks):
     :return: string, профиль пользователя
     """
     msg_text = await get_message(msg_type)
-    keyboard = await generate_keyboard_message(user_id, msg_type)
-    if msg_type == "cmd_register_step_4":
-        address_msg = await get_address(qwarks[0], qwarks[1])
-        msg_text += "\n\n" + address_msg
+    keyboard = await generate_keyboard_message(user_id, msg_type, *qwarks)
     if user_id in admins:
-        return msg_text + f"\n\n<i>msg_id: {msg_ids_dict[msg_type]}</i>", keyboard
+        return msg_text + f"\n\n{escape_md(f'msg_id: {msg_ids_dict[msg_type]}')}", keyboard
     else:
         return msg_text, keyboard

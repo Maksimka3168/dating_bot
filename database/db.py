@@ -6,6 +6,16 @@ class Database:
         self.connection = sqlite3.connect(db_file)
         self.cursor = self.connection.cursor()
 
+    def create_user_account(self, data_user_info: dict):
+        """
+        Добавляет пользователя в базу данных(не для проверки администратором)
+        :param data_user_info: Словарик с данными пользователя
+        :return: None
+        """
+        # Доп инфу сохраняем в отдельную таблицу связанную с пользователями по user_id
+        with self.connection:
+            self.cursor.execute("INSERT INTO `setting_admin_panel` (`key`) VALUES ((?))", (values,))
+
     def get_message_text(self, msg_id):
         with self.connection:
             result = self.cursor.execute("SELECT `text` FROM `messages` WHERE `id` = (?)",

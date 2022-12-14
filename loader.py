@@ -7,7 +7,7 @@ import config
 
 logging.basicConfig(level="WARNING")
 logger = logging.getLogger()
-bot_method = Bot(config.TELEGRAM_BOT_TOKEN)
+bot_method = Bot(config.TELEGRAM_BOT_TOKEN, parse_mode="MarkdownV2")
 dp = Dispatcher(bot_method, storage=MemoryStorage())
 
 
