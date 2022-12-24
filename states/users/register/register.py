@@ -11,8 +11,13 @@ from utils.admin.msg_correct import generate_profile_register
 async def user_register_cancel_handler(call: types.CallbackQuery, state: FSMContext):
     async with state.proxy() as data:
         data['msg_type'] = str(int(data['msg_type']) - 1)
-        msg_text, keyboard = await generate_profile_register(call.message.chat.id,
-                                                             data['msg_type'])
+        if data['msg_type'] == "1":  # Т.е. вводу возраста
+            msg_text, keyboard = await generate_profile_register(call.message.chat.id,
+                                                                 data['msg_type'], data['day'], data['month'],
+                                                                 data['year'])
+        else:
+            msg_text, keyboard = await generate_profile_register(call.message.chat.id,
+                                                                 data['msg_type'])
         data['message_id'] = await call.message.answer(text=msg_text, parse_mode="Markdown", reply_markup=keyboard)
         await call.message.delete()
         await UserRegister.previous()
@@ -46,9 +51,9 @@ async def user_register_calender_handler(call: types.CallbackQuery, state: FSMCo
 @dp.callback_query_handler(lambda c: c.data.startswith("select_"), state=UserRegister.user_input_year)
 async def user_register_calender_handler(call: types.CallbackQuery, state: FSMContext):
     async with state.proxy() as data:
-        data['select'] = [int(call.data[7:]), data['month'], data['year']]
+        data['day'] = [int(call.data[7:]), data['month'], data['year']]
         msg_text, keyboard = await generate_profile_register(call.message.chat.id,
-                                                             data['msg_type'], data['select'], data['month'],
+                                                             data['msg_type'], data['day'], data['month'],
                                                              data['year'])
         await call.message.edit_text(text=msg_text, reply_markup=keyboard, parse_mode="Markdown")
 
@@ -58,9 +63,9 @@ async def user_register_calender_handler(call: types.CallbackQuery, state: FSMCo
     async with state.proxy() as data:
         data['msg_type'] = str(int(data['msg_type']) + 1)
         data['dict_user_data']["birthdate"] = {
-            "day": data['select'][0],
-            "month": data['select'][1],
-            "year": data['select'][2]
+            "day": data['day'][0],
+            "month": data['day'][1],
+            "year": data['day'][2]
         }
         msg_text, keyboard = await generate_profile_register(call.message.chat.id, data['msg_type'])
         await call.message.edit_text(text=msg_text, parse_mode="Markdown", reply_markup=keyboard)
@@ -83,7 +88,9 @@ async def user_register_input_name_handler(message: types.Message, state: FSMCon
     async with state.proxy() as data:
         await message.delete()
         data['msg_type'] = str(int(data['msg_type']) + 1)
+
         data['dict_user_data']["name"] = message.text  # Проверка имени
+
         msg_text, keyboard = await generate_profile_register(message.from_user.id, data['msg_type'])
         await data['message_id'].edit_text(text=msg_text, reply_markup=keyboard,
                                            parse_mode="Markdown")

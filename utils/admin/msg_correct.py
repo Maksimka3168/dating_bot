@@ -1,6 +1,8 @@
+from typing import Union
+from const import HAIR_COLOR_CONST, PEOPLE_TYPE_CONST
 from config import admins
 from database.db import Database
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, WebAppInfo
 from aiogram.utils.callback_data import CallbackData
 from aiogram.utils.markdown import escape_md
 
@@ -28,9 +30,11 @@ msg_ids_dict = {
     "err_1": "e_1",  # Ошибка №1
 }
 
+
 async def generate_keyboard_message(user_id: int, msg_type: str, *qwargs) -> ReplyKeyboardMarkup | InlineKeyboardMarkup:
     keyboard_inline = InlineKeyboardMarkup()
     keyboard_text = ReplyKeyboardMarkup()
+    web_app = WebAppInfo(url="https://maksimka3168.github.io")
     if msg_type == "cmd_start_not_reg":
         keyboard_inline.add(InlineKeyboardButton(text="Зарегестрироваться", callback_data="register"))
     elif msg_type == "1":
@@ -38,6 +42,7 @@ async def generate_keyboard_message(user_id: int, msg_type: str, *qwargs) -> Rep
     elif msg_type == "2":
         keyboard_inline.insert(InlineKeyboardButton(text="М", callback_data="male"))
         keyboard_inline.insert(InlineKeyboardButton(text="Ж", callback_data="female"))
+        keyboard_inline.add(InlineKeyboardButton(text="Назад", callback_data="cancel"))
     elif msg_type == "3":
         keyboard_inline.add(InlineKeyboardButton(text="Назад", callback_data="cancel"))
     elif msg_type == "4":
@@ -45,12 +50,16 @@ async def generate_keyboard_message(user_id: int, msg_type: str, *qwargs) -> Rep
         keyboard_inline.add(InlineKeyboardButton(text="Правила", callback_data="rule"))
         keyboard_inline.add(InlineKeyboardButton(text="Назад", callback_data="cancel"))
     elif msg_type == "5":
-        keyboard_inline.add(InlineKeyboardButton(text="Назад", callback_data="cancel"))
+        keyboard_inline.add(InlineKeyboardButton(text="Назад", web_app=web_app))
     elif msg_type == "6":
         keyboard_inline.add(InlineKeyboardButton(text="Назад", callback_data="cancel"))
     elif msg_type == "7":
+        for _color in HAIR_COLOR_CONST:
+            keyboard_inline.add(InlineKeyboardButton(text=_color, callback_data=HAIR_COLOR_CONST[_color]))
         keyboard_inline.add(InlineKeyboardButton(text="Назад", callback_data="cancel"))
     elif msg_type == "8":
+        for _people_type in PEOPLE_TYPE_CONST:
+            keyboard_inline.add(InlineKeyboardButton(text=_people_type, callback_data=PEOPLE_TYPE_CONST[_people_type]))
         keyboard_inline.add(InlineKeyboardButton(text="Назад", callback_data="cancel"))
     elif msg_type == "9":
         keyboard_inline.add(InlineKeyboardButton(text="Назад", callback_data="cancel"))
@@ -59,9 +68,10 @@ async def generate_keyboard_message(user_id: int, msg_type: str, *qwargs) -> Rep
     elif msg_type == "err_1":
         keyboard_inline.add(InlineKeyboardButton(text="Назад", callback_data="cancel"))
     if user_id in admins:
-        keyboard_inline.add(InlineKeyboardButton(text="Изменить текст сообщения(for admin)", callback_data=edit_msg_admin.new(
-            f"{msg_type}"
-        )))
+        keyboard_inline.add(
+            InlineKeyboardButton(text="Изменить текст сообщения(for admin)", callback_data=edit_msg_admin.new(
+                f"{msg_type}"
+            )))
     return keyboard_inline
 
 

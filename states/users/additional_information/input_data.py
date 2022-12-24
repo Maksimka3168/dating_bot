@@ -48,27 +48,23 @@ async def user_addit_info_input_weight_handler(message: types.Message, state: FS
         await UserAdditInfo.input_hair_color.set()
 
 
-@dp.message_handler(state=UserAdditInfo.input_hair_color)
-async def user_addit_info_input_hair_color_handler(message: types.Message, state: FSMContext):
+@dp.callback_query_handler(state=UserAdditInfo.input_hair_color)
+async def user_addit_info_input_hair_color_handler(call: types.CallbackQuery, state: FSMContext):
     async with state.proxy() as data:
         data['msg_type'] = str(int(data['msg_type']) + 1)
-        data['dict_user_data']["hair_color"] = message.text
-        msg_text, keyboard = await generate_profile_register(message.from_user.id, data['msg_type'])
-        await data['message_id'].delete()
-        data['message_id'] = await message.answer(text=msg_text, reply_markup=keyboard, parse_mode="HTML")
-        await message.delete()
+        data['dict_user_data']["hair_color"] = call.data
+        msg_text, keyboard = await generate_profile_register(call.message.chat.id, data['msg_type'])
+        await call.message.edit_text(text=msg_text, reply_markup=keyboard, parse_mode="HTML")
         await UserAdditInfo.input_the_type.set()
 
 
-@dp.message_handler(state=UserAdditInfo.input_the_type)
-async def user_addit_info_input_the_type_handler(message: types.Message, state: FSMContext):
+@dp.callback_query_handler(state=UserAdditInfo.input_the_type)
+async def user_addit_info_input_the_type_handler(call: types.CallbackQuery, state: FSMContext):
     async with state.proxy() as data:
         # data['msg_type'] = str(int(data['msg_type']) + 1)
         # msg_text, keyboard = await generate_profile_register(message.from_user.id, data['msg_type'])
-        data['dict_user_data']["type"] = message.text
-        await data['message_id'].delete()
         # data['message_id'] = await message.answer(text=msg_text, reply_markup=keyboard, parse_mode="HTML")
-        await message.answer(text="На этом регистрация закончена")
-        await message.delete()
+        data['dict_user_data']["type"] = call.data
+        await call.message.edit_text(text="На этом регистрация закончена")
         print(data['dict_user_data'])
         await state.finish()
