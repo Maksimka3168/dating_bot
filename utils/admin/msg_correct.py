@@ -5,6 +5,7 @@ from database.db import Database
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, WebAppInfo
 from aiogram.utils.callback_data import CallbackData
 from aiogram.utils.markdown import escape_md
+from aiogram import types
 
 from utils.admin.generate_calendar import generate_calendar_inline
 
@@ -34,7 +35,7 @@ msg_ids_dict = {
 async def generate_keyboard_message(user_id: int, msg_type: str, *qwargs) -> ReplyKeyboardMarkup | InlineKeyboardMarkup:
     keyboard_inline = InlineKeyboardMarkup()
     keyboard_text = ReplyKeyboardMarkup()
-    web_app = WebAppInfo(url="https://maksimka3168.github.io")
+    web_app = WebAppInfo(url="https://maksimka3168.github.io/?form=register")
     if msg_type == "cmd_start_not_reg":
         keyboard_inline.add(InlineKeyboardButton(text="Зарегестрироваться", callback_data="register"))
     elif msg_type == "1":
